@@ -1,8 +1,10 @@
 {
   "targets": [
     {
-      "target_name": "hello",
-      "sources": [ "tellstick-node.cpp", "device-node.cpp" ],
+      "target_name": "tellstick",
+      "sources": [ "tellstick-node.cpp", "device-node.cpp", "sensor-node.cpp" ],
+      'cflags!': [ '-fno-exceptions' ],
+      'cflags_cc!': [ '-fno-exceptions' ],
       "include_dirs": [
         "<!(node -e \"require('nan')\")"
       ],

@@ -1,4 +1,6 @@
 #include "device-node.h"
+#include <vector>
+#include <string>
 
 using namespace v8;
 
@@ -43,17 +45,6 @@ void DeviceNode::NewInstance(const FunctionCallbackInfo<Value>& args) {
   args.GetReturnValue().Set(instance);
 }
 
-DeviceNode* DeviceNode::getObjectInternal(Local<Object> obj) {
-  return ObjectWrap::Unwrap<DeviceNode>(obj);
-}
-
-DeviceNode* DeviceNode::getDeviceBinding(const v8::FunctionCallbackInfo<v8::Value>& args) {
-  Isolate* isolate = Isolate::GetCurrent();
-  HandleScope scope(isolate);
-
-  return ObjectWrap::Unwrap<DeviceNode>(args.Holder());
-}
-
 //Getters
 void DeviceNode::GetName(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = Isolate::GetCurrent();
@@ -83,52 +74,107 @@ void DeviceNode::GetProtocol(const v8::FunctionCallbackInfo<v8::Value>& args) {
   args.GetReturnValue().Set(String::NewFromUtf8(isolate, device->getProtocol().c_str()));
 }
 
-void DeviceNode::GetDeviceType(const v8::FunctionCallbackInfo<v8::Value>&) args) {
+void DeviceNode::GetDeviceType(const v8::FunctionCallbackInfo<v8::Value>& args) {
   Isolate* isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
   Device* device = getDeviceBinding(args)->_device;
   args.GetReturnValue().Set(String::NewFromUtf8(isolate, device->getDeviceType().c_str()));
 }
 
-void DeviceNode::GetLastSentValue(const v8::FunctionCallbackInfo<v8::Value>&) args) {
+void DeviceNode::GetLastSentValue(const v8::FunctionCallbackInfo<v8::Value>& args) {
   Isolate* isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
   Device* device = getDeviceBinding(args)->_device;
   args.GetReturnValue().Set(String::NewFromUtf8(isolate, device->getLastSentValue().c_str()));
 }
 
-void DeviceNode::GetMethods(const v8::FunctionCallbackInfo<v8::Value>&) args) {
+void DeviceNode::GetMethods(const v8::FunctionCallbackInfo<v8::Value>& args) {
   Isolate* isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
   Device* device = getDeviceBinding(args)->_device;
-  v8::Handle<v8::Array> methods;
-  args.GetReturnValue().Set(String::NewFromUtf8(isolate, device->getName().c_str()));
+  std::vector<std::string> m = device->getMethods();
+  v8::Handle<v8::Array> methods = Array::New(isolate);
+
+  int i=0;
+  for (std::vector<std::string>::iterator it = m.begin(); it != m.end(); ++it) {
+    methods->Set(i++, String::NewFromUtf8(isolate, (*it).c_str()));
+  }
+
+  args.GetReturnValue().Set(methods);
 }
 
-void DeviceNode::GetDimValue(const v8::FunctionCallbackInfo<v8::Value>&) args) {
+void DeviceNode::GetDimValue(const v8::FunctionCallbackInfo<v8::Value>& args) {
   Isolate* isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
   Device* device = getDeviceBinding(args)->_device;
-  args.GetReturnValue().Set(Integer::New(isolate, device->getDimValue());
+  args.GetReturnValue().Set(Integer::New(isolate, device->getDimValue()));
 }
 
-void DeviceNode::IsOn(const v8::FunctionCallbackInfo<v8::Value>&) args) {
+void DeviceNode::IsOn(const v8::FunctionCallbackInfo<v8::Value>& args) {
   Isolate* isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
   Device* device = getDeviceBinding(args)->_device;
-  args.GetReturnValue().Set(Boolean::New(isolate, device->isOn));
+  args.GetReturnValue().Set(Boolean::New(isolate, device->isOn()));
 }
 
-void DeviceNode::IsDimmable(const v8::FunctionCallbackInfo<v8::Value>&) args) {
+void DeviceNode::IsDimmable(const v8::FunctionCallbackInfo<v8::Value>& args) {
   Isolate* isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
   Device* device = getDeviceBinding(args)->_device;
-  args.GetReturnValue().Set(Boolean::New(isolate, device->isDimmable));
+  args.GetReturnValue().Set(Boolean::New(isolate, device->isDimmable()));
 }
 
-//Internal set device
+//ACTIONS
+void DeviceNode::TurnOn(const v8::FunctionCallbackInfo<v8::Value>& args) {
+  getDeviceBinding(args)->_device->turnOn();
+}
+
+void DeviceNode::TurnOff(const v8::FunctionCallbackInfo<v8::Value>& args) {
+  getDeviceBinding(args)->_device->turnOff();
+}
+
+void DeviceNode::Dim(const v8::FunctionCallbackInfo<v8::Value>& args) {
+  Isolate* isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+  try {
+    int value = getIntParameter(args);
+    getDeviceBinding(args)->_device->dim(value);
+  } catch (const char* msg) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, msg)));
+  }
+}
+
+//Other
 void DeviceNode::setDevice(Device* device) {
   this->_device = device;
+}
+
+int DeviceNode::getIntParameter(const v8::FunctionCallbackInfo<v8::Value>& args) {
+  Isolate* isolate = Isolate::GetCurrent();
+  if (args.Length() < 1) {
+    isolate->ThrowException(Exception::TypeError(
+        String::NewFromUtf8(isolate, "Wrong number of arguments")));
+    throw "Wrong number of arguments";
+  }
+
+  if (!args[0]->IsNumber()) {
+    isolate->ThrowException(Exception::TypeError(
+        String::NewFromUtf8(isolate, "Wrong arguments")));
+    throw "Wrong arguments";
+  }
+
+  return args[0]->NumberValue();
+}
+
+DeviceNode* DeviceNode::getObjectInternal(Local<Object> obj) {
+  return ObjectWrap::Unwrap<DeviceNode>(obj);
+}
+
+DeviceNode* DeviceNode::getDeviceBinding(const v8::FunctionCallbackInfo<v8::Value>& args) {
+  Isolate* isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+
+  return ObjectWrap::Unwrap<DeviceNode>(args.Holder());
 }
 
 //Init
@@ -151,6 +197,11 @@ void DeviceNode::Init(v8::Handle<v8::Object> exports) {
   NODE_SET_PROTOTYPE_METHOD(tpl, "getDimValue", DeviceNode::GetDimValue);
   NODE_SET_PROTOTYPE_METHOD(tpl, "isOn", DeviceNode::IsOn);
   NODE_SET_PROTOTYPE_METHOD(tpl, "isDimmable", DeviceNode::IsDimmable);
+
+  NODE_SET_PROTOTYPE_METHOD(tpl, "turnOff", DeviceNode::TurnOff);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "turnOn", DeviceNode::TurnOn);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "dim", DeviceNode::Dim);
+
 
   constructor.Reset(isolate, tpl->GetFunction());
   exports->Set(String::NewFromUtf8(isolate, "DeviceNode"),

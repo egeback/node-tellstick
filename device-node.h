@@ -4,7 +4,7 @@
 #include <node.h>
 #include <node_object_wrap.h>
 #include <device.h>
-#include <iostream>
+#include <v8.h>
 
 class DeviceNode : public node::ObjectWrap {
   public:
@@ -14,6 +14,8 @@ class DeviceNode : public node::ObjectWrap {
     static void Init(v8::Handle<v8::Object>);
     static void NewInstance(const v8::FunctionCallbackInfo<v8::Value>& args);
     static DeviceNode* getObjectInternal(v8::Local<v8::Object>);
+
+    //GETTERS
     static void GetName(const v8::FunctionCallbackInfo<v8::Value>&);
     static void GetId(const v8::FunctionCallbackInfo<v8::Value>&);
     static void GetModel(const v8::FunctionCallbackInfo<v8::Value>&);
@@ -25,12 +27,19 @@ class DeviceNode : public node::ObjectWrap {
     static void IsOn(const v8::FunctionCallbackInfo<v8::Value>&);
     static void IsDimmable(const v8::FunctionCallbackInfo<v8::Value>&);
 
+    //ACTIONS
+    static void TurnOn(const v8::FunctionCallbackInfo<v8::Value>&);
+    static void TurnOff(const v8::FunctionCallbackInfo<v8::Value>&);
+    static void Dim(const v8::FunctionCallbackInfo<v8::Value>&);
+
   private:
     explicit DeviceNode();
     ~DeviceNode();
 
     static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
     static DeviceNode* getDeviceBinding(const v8::FunctionCallbackInfo<v8::Value>&);
+    static int getIntParameter(const v8::FunctionCallbackInfo<v8::Value>& args);
+
     Device *_device;
 };
 
