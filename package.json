@@ -1,0 +1,14 @@
+{
+  "name": "node-tellstick",
+  "version": "1.0.0",
+  "description": "Telldus wrapper node.js",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Marky Egebäck",
+  "license": "ISC",
+  "dependencies": {
+    "nan": "^2.1.0"
+  }
+}

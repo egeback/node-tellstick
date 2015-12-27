@@ -1,0 +1,1 @@
+cmd_Release/obj.target/hello.node := g++ -shared -pthread -rdynamic  -Wl,-soname=hello.node -o Release/obj.target/hello.node -Wl,--start-group Release/obj.target/hello/tellstick-node.o Release/obj.target/hello/device-node.o -Wl,--end-group -ltelldus-core -ltellstick
