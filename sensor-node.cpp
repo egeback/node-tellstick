@@ -82,14 +82,26 @@ void SensorNode::GetTemperature(const v8::FunctionCallbackInfo<v8::Value>& args)
   Isolate* isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
 
-  args.GetReturnValue().Set(getValueObject(getSensorBinding(args)->_sensor->getTemperature(), isolate));
+  const Sensor::Value* value = getSensorBinding(args)->_sensor->getTemperature();
+  if(value==NULL) {
+      args.GetReturnValue().Set(v8::Null(isolate));
+      return;
+  }
+
+  args.GetReturnValue().Set(getValueObject(value, isolate));
 }
 
 void SensorNode::GetHumidity(const v8::FunctionCallbackInfo<v8::Value>& args) {
   Isolate* isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
 
-  args.GetReturnValue().Set(getValueObject(getSensorBinding(args)->_sensor->getHumidity(), isolate));
+  const Sensor::Value* value = getSensorBinding(args)->_sensor->getHumidity();
+
+  if(value==NULL) {
+    args.GetReturnValue().Set(v8::Null(isolate));
+    return;
+  }
+  args.GetReturnValue().Set(getValueObject(value, isolate));
 }
 
 //Other
