@@ -202,7 +202,6 @@ void DeviceNode::Init(v8::Handle<v8::Object> exports) {
   NODE_SET_PROTOTYPE_METHOD(tpl, "turnOn", DeviceNode::TurnOn);
   NODE_SET_PROTOTYPE_METHOD(tpl, "dim", DeviceNode::Dim);
 
-
   constructor.Reset(isolate, tpl->GetFunction());
   exports->Set(String::NewFromUtf8(isolate, "DeviceNode"),
                tpl->GetFunction());

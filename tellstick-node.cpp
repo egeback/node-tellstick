@@ -88,7 +88,7 @@ namespace TellstickNode {
   void GetSensor(const FunctionCallbackInfo<Value>& args) {
     Isolate* isolate = Isolate::GetCurrent();
     HandleScope scope(isolate);
-    
+
     int id = args[0]->NumberValue();
     Sensor* sensor = Sensor::getSensor(id);
 
